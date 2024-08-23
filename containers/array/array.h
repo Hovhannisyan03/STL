@@ -8,7 +8,7 @@
 namespace my_std
 {
     template <class T, size_t N>
-    class array
+    struct array
     {
         public:
             using value_type = T;
@@ -25,16 +25,16 @@ namespace my_std
             class reverse_iterator;
 
         public:
-            array();
+            array() = default;
             array(std::initializer_list<value_type> init);
-            array(const array& other);
-            array(array&& other) noexcept;
-            ~array(){};
+            array(const array& other) = default;
+            array(array&& other) noexcept = default;
+            ~array() = default;
             
         public:
-            const array& operator=(const array& other);
-            const array& operator=(array&& other) noexcept;
-            const array& operator=(std::initializer_list<value_type> init);
+            array& operator=(const array& other) = default;;
+            array& operator=(array&& other) noexcept = default;;
+            array& operator=(std::initializer_list<value_type> init);
 
         public:
             reference at(size_type pos);
@@ -84,14 +84,13 @@ namespace my_std
 
         private:
             T m_arr[N];
-            size_type m_size;
     };
 }
 
 template <class T, size_t N>
 class my_std::array<T,N>::const_iterator
 {
-    friend class my_std::array<T,N>;
+    friend struct my_std::array<T,N>;
     private:
         const_pointer m_ptr;
         const_iterator(const_pointer ptr);
@@ -127,7 +126,7 @@ class my_std::array<T,N>::const_iterator
 template <class T, size_t N>
 class my_std::array<T,N>::iterator : public my_std::array<T,N>::const_iterator
 {
-        friend class my_std::array<T,N>;
+        friend struct my_std::array<T,N>;
     private:
         pointer m_ptr;
         iterator(pointer ptr);
@@ -164,7 +163,7 @@ class my_std::array<T,N>::iterator : public my_std::array<T,N>::const_iterator
 template <class T, size_t N>
 class my_std::array<T,N>::const_reverse_iterator
 {
-    friend class my_std::array<T,N>;
+    friend struct my_std::array<T,N>;
     private:
         const_pointer m_ptr;
         const_reverse_iterator(const_pointer ptr);
@@ -200,7 +199,7 @@ class my_std::array<T,N>::const_reverse_iterator
 template <class T, size_t N>
 class my_std::array<T,N>::reverse_iterator : public my_std::array<T,N>::const_reverse_iterator
 {
-    friend class my_std::array<T,N>;
+    friend struct my_std::array<T,N>;
     private:
         pointer m_ptr;
         reverse_iterator(pointer ptr);
@@ -209,8 +208,8 @@ class my_std::array<T,N>::reverse_iterator : public my_std::array<T,N>::const_re
         reverse_iterator(const reverse_iterator&) = default;
         reverse_iterator(reverse_iterator&&) = default;
 
-        const reverse_iterator& operator=(const reverse_iterator&);
-        const reverse_iterator& operator=(reverse_iterator&&) noexcept;
+        reverse_iterator& operator=(const reverse_iterator&) = default;
+        reverse_iterator& operator=(reverse_iterator&&) noexcept = default;
 
         reverse_iterator operator+(size_type n) const;      
         reverse_iterator operator-(size_type n) const;
