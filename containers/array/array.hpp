@@ -1,73 +1,29 @@
 #include "array.h"
 
 template <class T, size_t N>
-my_std::array<T,N>::array() : m_arr{0}, m_size{0} {}
-
-template <class T, size_t N>
-my_std::array<T,N>::array(std::initializer_list<value_type> init) : m_arr{0}, m_size{0}
+my_std::array<T,N>::array(std::initializer_list<value_type> init) : m_arr{0}
 {   
+    size_type size = 0;
     for(const auto& elem : init)
     {
-        m_arr[m_size++] = elem;
+        m_arr[size++] = elem;
     }
 }
 
 template <class T, size_t N>
-my_std::array<T,N>::array(const array& other) : m_arr{0}, m_size{other.m_size}
+my_std::array<T,N>& my_std::array<T,N>::operator=(std::initializer_list<value_type> init)
 {
-    for(size_type i = 0; i < N; ++i)
-    {
-        m_arr[i] = other.m_arr[i];
-    }
-}
-
-template <class T, size_t N>
-my_std::array<T,N>::array(array&& other) noexcept : m_arr{0}, m_size{other.m_size}
-{
-    for(size_type i = 0; i < N; ++i)
-    {
-        m_arr[i] = other.m_arr[i];
-    }
-    other.m_size = 0;    
-}
-
-template <class T, size_t N>
-const my_std::array<T,N>& my_std::array<T,N>::operator=(std::initializer_list<value_type> init)
-{
-    m_size = 0;
+    size_type size = 0;
     for(const auto& elem : init)
     {
-        m_arr[m_size++] = elem;
+        m_arr[size++] = elem;
     }
-    if(m_size < N)
+    if(size < N)
     {
-        for(size_type i = m_size; i < N; ++i)
+        for(size_type i = size; i < N; ++i)
         {
             m_arr[i] = 0;
         }
-    }
-    return *this;
-}
-
-template <class T, size_t N>
-const my_std::array<T,N>& my_std::array<T,N>::operator=(const array& other) 
-{
-    m_size = other.m_size;
-    for(size_type i = 0; i < N; ++i)
-    {
-        m_arr[i] = other.m_arr[i];
-    }
-    return *this;
-}
-
-template <class T, size_t N>
-const my_std::array<T,N>& my_std::array<T,N>::operator=(array&& other) noexcept 
-{
-    m_size = other.m_size;
-    other.m_size = 0;    
-    for(size_type i = 0; i < N; ++i)
-    {
-        m_arr[i] = other.m_arr[i];
     }
     return *this;
 }
@@ -174,7 +130,7 @@ constexpr bool my_std::array<T,N>::empty() const noexcept
 template <class T, size_t N>
 constexpr typename my_std::array<T,N>::size_type my_std::array<T,N>::size() const noexcept
 {
-    return m_size;
+    return N;
 }
 
 template <class T, size_t N>
