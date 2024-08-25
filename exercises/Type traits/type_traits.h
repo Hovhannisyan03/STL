@@ -2,7 +2,7 @@
 #define TYPE_TRAITS_H
 #include <iostream>
 #include <type_traits>
-                                       //=== Helpers ===//
+                                       //=== integral_constant ===//
 template<class T, T v>
 struct integral_constant
 {
