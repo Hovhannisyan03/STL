@@ -298,7 +298,7 @@ namespace my_deque
             }
         }
 
-        if(m_r_size)
+        if(m_right)
         {
             for(size_t i = 0; i < m_r_size; ++i)
             {
@@ -320,50 +320,33 @@ namespace my_deque
     template <typename T, class Allocator>
     typename deque<T,Allocator>::iterator deque<T,Allocator>::erase(const_iterator pos)
     {
-        if (pos.m_ptr >= m_left && pos.m_ptr < m_left + m_l_size) 
+        if (m_left && (pos.m_ptr >= m_left) && (pos.m_ptr < m_left + m_l_size)) 
         {
             size_type offset = pos.m_ptr - m_left;
 
-            if (m_l_size == 1) 
+            for (size_type i = offset; i < m_l_size - 1; ++i) 
             {
-                m_alloc.destroy(&m_left[0]);
-                --m_l_size;
-            } 
-            else 
-            {
-                for (size_type i = offset; i < m_l_size - 1; ++i) 
-                {
-                    m_left[i] = m_left[i + 1]; 
-                }
-                m_alloc.destroy(&m_left[m_l_size - 1]);
-                --m_l_size;
+                m_left[i] = m_left[i + 1]; 
             }
+            m_alloc.destroy(&m_left[m_l_size - 1]);
+            --m_l_size;
 
-            if(pos.m_ptr == m_left)
+            if(pos.m_ptr == pos.m_left)
             {
-                return iterator(m_right);
+                return iterator(pos.m_right - 1);
             }
-            return iterator(m_left + offset - 1 ); 
+            return iterator(m_left + offset - 1, m_left, m_right); 
         } 
-        else if (pos.m_ptr >= m_right && pos.m_ptr < m_right + m_r_size) 
-        {
+        else if(m_right && (pos.m_ptr >= m_right) && (pos.m_ptr < m_right + m_r_size)) 
+        {   
             size_type offset = pos.m_ptr - m_right;
-
-            if (m_r_size == 1) 
+            for (size_type i = offset; i < m_r_size - 1; ++i) 
             {
-                m_alloc.destroy(&m_right[0]);
-                --m_r_size;
-            } 
-            else 
-            {
-                for (size_type i = offset; i < m_r_size - 1; ++i) 
-                {
-                    m_right[i] = m_right[i + 1]; 
-                }
-                m_alloc.destroy(&m_right[m_r_size - 1]);
-                --m_r_size; 
+                m_right[i] = m_right[i + 1]; 
             }
-            return iterator(m_right + offset + 1); 
+            m_alloc.destroy(&m_right[m_r_size - 1]);
+            --m_r_size; 
+            return iterator(m_right + offset - 1, m_left, m_right); 
         }
 
         throw std::out_of_range("Invalid iterator"); 
@@ -374,14 +357,16 @@ namespace my_deque
     {
         while (first != last) 
         {
-            std::cout << *first << " ";
-            first = erase(first);
-
+            if(first.m_ptr != m_right - 1)
+            {
+                first = erase(first); 
+            }
+            else
+            {
+                last = erase(last);
+            }
         }
-
-        rebalance(); // Ensure the deque is balanced after removals
-
-        return iterator(first.m_ptr); // Return the iterator to the position after the last erased element
+        return iterator(first.m_ptr >= m_left ? first.m_ptr : first.m_ptr + 1,first.m_left, first.m_right);
     }
 
     template <typename T, class Allocator>
@@ -389,11 +374,11 @@ namespace my_deque
     {
         if(pos.m_ptr >= m_left && pos.m_ptr < m_left + m_l_size)
         {
+            value_type offset = pos.m_ptr - m_left;
             if(m_l_size == m_l_capacity)
             {
                 reserve(m_l_capacity * 2);
             }
-            value_type offset = pos.m_ptr - m_left;
             m_alloc.construct(m_left + m_l_size, 0);
             value_type temp = m_l_size;
             while(temp != offset)
@@ -401,17 +386,17 @@ namespace my_deque
                 m_left[temp] = m_left[temp - 1];
                 --temp;
             }
-            m_left[offset] = value;
+            m_left[offset + 1] = value;
             ++m_l_size;
-            return iterator(m_left + (pos.m_ptr - m_left));
+            return iterator(m_left + offset, pos.m_left, pos.m_right);
         }
         else if(pos.m_ptr >= m_right && pos.m_ptr < m_right + m_r_size)
         {
+            value_type offset = pos.m_ptr - m_right;
             if(m_r_size == m_r_capacity)
             {
                 reserve(m_r_capacity * 2);
             }
-            value_type offset = pos.m_ptr - m_right;
             m_alloc.construct(m_right + m_r_size, 0);
             value_type temp = m_r_size;
             while(temp != offset)
@@ -421,11 +406,44 @@ namespace my_deque
             }
             m_right[offset] = value;
             ++m_r_size;
-            return iterator(m_right + (pos.m_ptr - m_right));
+            return iterator(m_right + offset + 1, pos.m_left, pos.m_right);
         }
         throw std::out_of_range("Invalid iterator");
         
     }
+
+    template <typename T, class Allocator>
+    typename deque<T,Allocator>::iterator deque<T,Allocator>::insert(const_iterator pos, std::initializer_list<T> init)
+    {
+        for(const auto& elem : init)
+        {
+            pos = insert(pos,elem);
+        }
+        return iterator(pos.m_ptr,pos.m_left,pos.m_right);
+    }
+
+    template <typename T, class Allocator>
+    typename deque<T,Allocator>::iterator deque<T,Allocator>::insert(const_iterator pos, const_iterator first, const_iterator last)
+    {
+        while(first != last)
+        {
+            pos = insert(pos, *first);
+            ++first;
+        }
+        return iterator(pos.m_ptr, m_left, m_right);
+    }
+
+    template <typename T, class Allocator>
+    typename deque<T,Allocator>::iterator deque<T,Allocator>::insert(const_iterator pos, size_type count, const value_type& value)
+    {
+        while(count != -1)
+        {
+            pos = insert(pos,value);
+            --count;
+        }
+        return iterator(pos.m_ptr,pos.m_left,pos.m_right);
+    }
+
     template <typename T, class Allocator>
     void deque<T,Allocator>::push_back(const value_type& value)
     {
@@ -791,7 +809,7 @@ namespace my_deque
     template<typename T, class Allocator>
     typename deque<T,Allocator>::const_iterator deque<T,Allocator>::begin() const 
     {   
-        return const_iterator(m_left + m_l_size - 1, m_left, m_right);
+        return const_iterator(m_l_size == 0 ? m_right : m_left + m_l_size - 1, m_left, m_right);
     }
 
 
@@ -804,7 +822,7 @@ namespace my_deque
     template<typename T, class Allocator>
     typename deque<T,Allocator>::const_iterator deque<T,Allocator>::cbegin() const noexcept
     {
-        return const_iterator(m_left + m_l_size - 1, m_left, m_right);
+        return const_iterator(m_l_size == 0 ? m_right : m_left + m_l_size - 1, m_left, m_right);
     }
 
     template<typename T, class Allocator>
@@ -961,7 +979,7 @@ namespace my_deque
     template<typename T, class Allocator>
     typename deque<T,Allocator>::iterator deque<T,Allocator>::begin()  
     {   
-        return iterator(m_left + m_l_size - 1, m_left, m_right);
+        return iterator(m_l_size == 0 ? m_right : m_left + m_l_size - 1, m_left, m_right);
     }
 
 
