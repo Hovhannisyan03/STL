@@ -76,9 +76,9 @@ namespace my_deque
         public:
             class iterator;
             class const_iterator;
-            // class reverse_iterator;
-            // class const_reverse_iterator;
-
+            class reverse_iterator;
+            class const_reverse_iterator;
+            
         public:
             deque();
             explicit deque(const Allocator& aloc);
@@ -125,13 +125,13 @@ namespace my_deque
             const_iterator end() const;
             const_iterator cend() const noexcept;
 
-            // reverse_iterator rbegin();
-            // const_reverse_iterator rbegin() const;
-            // const_reverse_iterator crbegin() const noexcept;
+            reverse_iterator rbegin();
+            const_reverse_iterator rbegin() const;
+            const_reverse_iterator crbegin() const noexcept;
 
-            // reverse_iterator rend();
-            // const_reverse_iterator rend() const;
-            // const_reverse_iterator crend() const noexcept;
+            reverse_iterator rend();
+            const_reverse_iterator rend() const;
+            const_reverse_iterator crend() const noexcept;
 
         public:
             bool empty() const;
@@ -210,8 +210,8 @@ class my_deque::deque<T,Allocator>::const_iterator
         const_iterator& operator=(const const_iterator&) = default;      
         const_iterator& operator=(const_iterator&&) = default;
 
-        // const_iterator operator+(size_type n) const;      
-        // const_iterator operator-(size_type n) const;
+        const_iterator operator+(size_type n) const;      
+        const_iterator operator-(size_type n) const;
 
         const_iterator& operator++();
         const_iterator operator++(int);
@@ -245,8 +245,8 @@ class my_deque::deque<T,Allocator>::iterator : public my_deque::deque<T,Allocato
         iterator& operator=(const iterator&) = default;      
         iterator& operator=(iterator&&) = default;
 
-        // iterator operator+(size_type n) const;      
-        // iterator operator-(size_type n) const;
+        iterator operator+(size_type n) const;      
+        iterator operator-(size_type n) const;
 
         iterator& operator++();
         iterator operator++(int);
@@ -260,70 +260,72 @@ class my_deque::deque<T,Allocator>::iterator : public my_deque::deque<T,Allocato
 };
 
 
-// template <typename T, class Allocator>
-// class my_deque::deque<T,Allocator>::const_reverse_iterator
-// {
-//         friend class deque<T,Allocator>;
-//     protected:
-//         pointer m_ptr;
-//     private:
-//         const_reverse_iterator(pointer ptr);
-//     public:
-//         const_reverse_iterator() = default;
-//         const_reverse_iterator(const const_reverse_iterator&) = default;      
-//         const_reverse_iterator(const_reverse_iterator&&) = default;
+template <typename T, class Allocator>
+class my_deque::deque<T,Allocator>::const_reverse_iterator
+{
+        friend class deque<T,Allocator>;
+    protected:
+        pointer m_ptr;        
+        pointer m_left;
+        pointer m_right;
+    private:
+        const_reverse_iterator(pointer ptr = nullptr, pointer left = nullptr, pointer right = nullptr);
+    public:
+        const_reverse_iterator() = default;
+        const_reverse_iterator(const const_reverse_iterator&) = default;      
+        const_reverse_iterator(const_reverse_iterator&&) = default;
 
-//         const_reverse_iterator& operator=(const const_reverse_iterator&) = default;      
-//         const_reverse_iterator& operator=(const_reverse_iterator&&) = default;
+        const_reverse_iterator& operator=(const const_reverse_iterator&) = default;      
+        const_reverse_iterator& operator=(const_reverse_iterator&&) = default;
 
-//         const_reverse_iterator operator+(size_type n) const;      
-//         const_reverse_iterator operator-(size_type n) const;
+        const_reverse_iterator operator+(size_type n) const;      
+        const_reverse_iterator operator-(size_type n) const;
 
-//         const_reverse_iterator& operator++();
-//         const_reverse_iterator operator++(int);
-//         const_reverse_iterator& operator--();
-//         const_reverse_iterator operator--(int);
+        const_reverse_iterator& operator++();
+        const_reverse_iterator operator++(int);
+        const_reverse_iterator& operator--();
+        const_reverse_iterator operator--(int);
 
-//         const_reference operator*() const;
-//         const_pointer operator->() const;
+        const_reference operator*() const;
+        const_pointer operator->() const;
 
-//         const_reference operator[](size_type pos) const;
+        // const_reference operator[](size_type pos) const;
 
-//         bool operator==(const const_reverse_iterator& other) const;      
-//         bool operator!=(const const_reverse_iterator& other) const;      
-//         bool operator<(const const_reverse_iterator& other) const;      
-//         bool operator<=(const const_reverse_iterator& other) const;      
-//         bool operator>(const const_reverse_iterator& other) const;      
-//         bool operator>=(const const_reverse_iterator& other) const;      
-// };
+        bool operator==(const const_reverse_iterator& other) const;      
+        bool operator!=(const const_reverse_iterator& other) const;      
+        bool operator<(const const_reverse_iterator& other) const;      
+        bool operator<=(const const_reverse_iterator& other) const;      
+        bool operator>(const const_reverse_iterator& other) const;      
+        bool operator>=(const const_reverse_iterator& other) const;      
+};
 
-// template <typename T, class Allocator>
-// class my_deque::deque<T,Allocator>::reverse_iterator : public my_deque::deque<T,Allocator>::const_reverse_iterator
-// {
-//         friend class deque<T,Allocator>;
-//     private:
-//         reverse_iterator(pointer ptr);
-//     public:
-//         reverse_iterator() = default;
-//         reverse_iterator(const reverse_iterator&) = default;      
-//         reverse_iterator(reverse_iterator&&) = default;
+template <typename T, class Allocator>
+class my_deque::deque<T,Allocator>::reverse_iterator : public my_deque::deque<T,Allocator>::const_reverse_iterator
+{
+        friend class deque<T,Allocator>;
+    private:
+        reverse_iterator(pointer ptr = nullptr, pointer left = nullptr, pointer right = nullptr);
+    public:
+        reverse_iterator() = default;
+        reverse_iterator(const reverse_iterator&) = default;      
+        reverse_iterator(reverse_iterator&&) = default;
 
-//         const reverse_iterator& operator=(const reverse_iterator& rhv);      
-//         const reverse_iterator& operator=(reverse_iterator&& rhv);
+        const reverse_iterator& operator=(const reverse_iterator& rhv);      
+        const reverse_iterator& operator=(reverse_iterator&& rhv);
 
-//         reverse_iterator operator+(size_type n) const;      
-//         reverse_iterator operator-(size_type n) const;
+        reverse_iterator operator+(size_type n) const;      
+        reverse_iterator operator-(size_type n) const;
 
-//         reverse_iterator& operator++();
-//         reverse_iterator operator++(int);
-//         reverse_iterator& operator--();
-//         reverse_iterator operator--(int);
+        reverse_iterator& operator++();
+        reverse_iterator operator++(int);
+        reverse_iterator& operator--();
+        reverse_iterator operator--(int);
 
-//         reference operator*();
-//         pointer operator->();
+        reference operator*();
+        pointer operator->();
 
-//         reference operator[](size_type pos) const;
-// };
+        // reference operator[](size_type pos) const;
+};
 
 #include "deque.hpp"
 #endif
