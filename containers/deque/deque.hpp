@@ -702,36 +702,41 @@ namespace my_deque
     template<typename T, class Allocator>
     deque<T,Allocator>::const_iterator::const_iterator(pointer ptr, pointer left, pointer right) : m_ptr{ptr}, m_left{left}, m_right{right}{}
 
-    // template<typename T, class Allocator>
-    // typename deque<T, Allocator>::const_iterator deque<T, Allocator>::const_iterator::operator+(size_type n) const
-    // {
-    //     if(m_ptr - n >= m_left)
-    //     {
-    //         return const_iterator(m_ptr - n, m_left, m_right);
-    //     }
-    //     else
-    //     {
-    //         size_type offset = m_left - m_ptr - n;
-    //         return const_iterator(m_right + offset, m_left, m_right);
-    //     }
-    // }
-
+    template<typename T, class Allocator>
+    typename deque<T, Allocator>::const_iterator deque<T, Allocator>::const_iterator::operator+(size_type n) const
+    {
+        if(m_ptr - n >= m_left)
+        {
+            return const_iterator(m_ptr - n, m_left, m_right);
+        }
+        else if(m_ptr >= m_right && m_ptr < m_left)
+        {
+            return const_iterator(m_ptr + n, m_left, m_right);
+        }
+        else
+        {
+            size_type offset = n - (m_ptr - m_left) - 1;
+            return const_iterator(m_right + offset, m_left, m_right);
+        }
+    }
     
-    // template<typename T, class Allocator>
-    // typename deque<T,Allocator>::const_iterator deque<T,Allocator>::const_iterator::operator-(size_type n) const
-    // {
-    //     const pointer new_ptr = m_ptr - n;
-
-    //     if(new_ptr >= m_left)
-    //     {
-    //         return const_iterator(new_ptr, m_left, m_right);
-    //     }
-    //     else
-    //     {
-    //         size_type offset = m_left + m_l_size - new_ptr;
-    //         return const_iterator(m_right - (n - offset), m_left, m_right);
-    //     }
-    // }
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::const_iterator deque<T,Allocator>::const_iterator::operator-(size_type n) const
+    {
+        if (m_ptr - n >= m_right && m_ptr < m_left)
+        {
+            return const_iterator(m_ptr - n, m_left, m_right);
+        }
+        else if (m_ptr >= m_left)
+        {
+            return const_iterator(m_ptr + n, m_left, m_right);
+        }
+        else
+        {
+            size_type offset = n - (m_ptr - m_right) - 1;
+            return const_iterator(m_left + offset, m_left, m_right);
+        }
+    }
 
     template<typename T, class Allocator>
     typename deque<T,Allocator>::const_iterator& deque<T,Allocator>::const_iterator::operator++()
@@ -816,7 +821,7 @@ namespace my_deque
     template<typename T, class Allocator>
     typename deque<T, Allocator>::const_iterator deque<T, Allocator>::end() const 
     {
-        return const_iterator(m_right + m_r_size, m_left, m_right);
+        return const_iterator(m_r_size == 0 ? m_left : m_right + m_r_size, m_left, m_right);
     }
 
     template<typename T, class Allocator>
@@ -828,7 +833,7 @@ namespace my_deque
     template<typename T, class Allocator>
     typename deque<T, Allocator>::const_iterator deque<T, Allocator>::cend() const noexcept
     {
-        return const_iterator(m_right + m_r_size, m_left, m_right);
+        return const_iterator(m_r_size == 0 ? m_left : m_right + m_r_size, m_left, m_right);
     }
 
     template<typename T, class Allocator>
@@ -844,27 +849,34 @@ namespace my_deque
     }
 
     template<typename T, class Allocator>
-    bool deque<T, Allocator>::const_iterator::operator>(const const_iterator& other) const 
-    {
-        return m_ptr > other.m_ptr;
-    }
-
-    template<typename T, class Allocator>
-    bool deque<T, Allocator>::const_iterator::operator<(const const_iterator& other) const 
+    bool deque<T, Allocator>::const_iterator::operator>(const const_iterator& other) const
     {
         return m_ptr < other.m_ptr;
     }
 
     template<typename T, class Allocator>
+    bool deque<T, Allocator>::const_iterator::operator<(const const_iterator& other) const 
+    { 
+        if(m_ptr >= m_left)
+        {
+            return m_ptr > other.m_ptr;
+        }
+        else
+        {
+            return m_ptr < other.m_ptr;
+        } 
+    }
+
+    template<typename T, class Allocator>
     bool deque<T, Allocator>::const_iterator::operator>=(const const_iterator& other) const 
     {
-        return m_ptr >= other.m_ptr;
+        return *this > other || *this == other;
     }
 
     template<typename T, class Allocator>
     bool deque<T, Allocator>::const_iterator::operator<=(const const_iterator& other) const 
     {
-        return m_ptr <= other.m_ptr;
+        return *this < other || *this == other;
     }
 
 
@@ -872,36 +884,42 @@ namespace my_deque
     template<typename T, class Allocator>
     deque<T,Allocator>::iterator::iterator(pointer ptr, pointer left, pointer right) : const_iterator(ptr,left,right){}
 
-    // template<typename T, class Allocator>
-    // typename deque<T, Allocator>::iterator deque<T, Allocator>::iterator::operator+(size_type n) const
-    // {
-    //     if(m_ptr - n >= m_left)
-    //     {
-    //         return iterator(m_ptr - n, m_left, m_right);
-    //     }
-    //     else
-    //     {
-    //         size_type offset = m_left - m_ptr - n;
-    //         return iterator(m_right + offset, m_left, m_right);
-    //     }
-    // }
+    template<typename T, class Allocator>
+    typename deque<T, Allocator>::iterator deque<T, Allocator>::iterator::operator+(size_type n) const
+    {
+        if(this->m_ptr - n >= this->m_left)
+        {
+            return iterator(this->m_ptr - n, this->m_left, this->m_right);
+        }
+        else if(this->m_ptr >= this->m_right && this->m_ptr < this->m_left)
+        {
+            return iterator(this->m_ptr + n, this->m_left, this->m_right);
+        }
+        else
+        {
+            size_type offset = n - (this->m_ptr - this->m_left) - 1;
+            return iterator(this->m_right + offset, this->m_left, this->m_right);
+        }
+    }
 
     
-    // template<typename T, class Allocator>
-    // typename deque<T,Allocator>::iterator deque<T,Allocator>::iterator::operator-(size_type n) const
-    // {
-    //     pointer new_ptr = m_ptr - n;
-
-    //     if(new_ptr >= m_left)
-    //     {
-    //         return iterator(new_ptr, m_left, m_right);
-    //     }
-    //     else
-    //     {
-    //         size_type offset = m_left + m_l_size - new_ptr;
-    //         return iterator(m_right - (n - offset), m_left, m_right);
-    //     }
-    // }
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::iterator deque<T,Allocator>::iterator::operator-(size_type n) const
+    {
+        if (this->m_ptr - n >= this->m_right && this->m_ptr < this->m_left)
+        {
+            return iterator(this->m_ptr - n, this->m_left, this->m_right);
+        }
+        else if (this->m_ptr >= this->m_left)
+        {
+            return iterator(this->m_ptr + n, this->m_left, this->m_right);
+        }
+        else
+        {
+            size_type offset = n - (this->m_ptr - this->m_right) - 1;
+            return iterator(this->m_left + offset, this->m_left, this->m_right);
+        }
+    }
 
     template<typename T, class Allocator>
     typename deque<T,Allocator>::iterator& deque<T,Allocator>::iterator::operator++()
@@ -986,10 +1004,315 @@ namespace my_deque
     template<typename T, class Allocator>
     typename deque<T, Allocator>::iterator deque<T, Allocator>::end()  
     {
-        return iterator(m_right + m_r_size, m_left, m_right);
+        return iterator(m_r_size == 0 ? m_left : m_right + m_r_size, m_left, m_right);
     }
-// ======================================================== reverse_iterator ================================================
-// ======================================================== const_reverse_iterator ==========================================
+
+    // ======================================================== const_reverse_iterator ==========================================
+    template<typename T, class Allocator>
+    deque<T,Allocator>::const_reverse_iterator::const_reverse_iterator(pointer ptr, pointer left, pointer right) : m_ptr{ptr}, m_left{left}, m_right{right}{}
+
+    template<typename T, class Allocator>
+    typename deque<T, Allocator>::const_reverse_iterator deque<T, Allocator>::const_reverse_iterator::operator-(size_type n) const
+    {
+        if(m_ptr - n >= m_left)
+        {
+            return const_reverse_iterator(m_ptr - n, m_left, m_right);
+        }
+        else if(m_ptr >= m_right && m_ptr < m_left)
+        {
+            return const_reverse_iterator(m_ptr + n, m_left, m_right);
+        }
+        else
+        {
+            size_type offset = n - (m_ptr - m_left) - 1;
+            return const_reverse_iterator(m_right + offset, m_left, m_right);
+        }
+    }
+    
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::const_reverse_iterator deque<T,Allocator>::const_reverse_iterator::operator+(size_type n) const
+    {
+        if (m_ptr - n >= m_right && m_ptr < m_left)
+        {
+            return const_reverse_iterator(m_ptr - n, m_left, m_right);
+        }
+        else if (m_ptr >= m_left)
+        {
+            return const_reverse_iterator(m_ptr + n, m_left, m_right);
+        }
+        else
+        {
+            size_type offset = n - (m_ptr - m_right) - 1;
+            return const_reverse_iterator(m_left + offset, m_left, m_right);
+        }
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::const_reverse_iterator& deque<T,Allocator>::const_reverse_iterator::operator--()
+    {    
+        if(m_ptr >= m_left)
+        {
+            if(m_ptr == m_left)
+            {
+                m_ptr = m_right;
+                return *this;
+            }
+            --m_ptr;
+        }
+        else
+        {
+            ++m_ptr;
+        }
+        return *this;
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::const_reverse_iterator deque<T,Allocator>::const_reverse_iterator::operator--(int)
+    {
+        const_reverse_iterator tmp = *this;
+        ++(*this);
+        return tmp;
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::const_reverse_iterator& deque<T,Allocator>::const_reverse_iterator::operator++()
+    {
+        if(m_ptr >= m_right && !(m_ptr >= m_left))
+        {
+            if(m_ptr == m_right)
+            {
+                m_ptr = m_left;
+                return *this;
+            }
+            --m_ptr;
+        }
+        else
+        {
+            ++m_ptr;
+        }
+        return *this;
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::const_reverse_iterator deque<T,Allocator>::const_reverse_iterator::operator++(int)
+    {
+        const_reverse_iterator tmp = *this;
+        --(*this);
+        return tmp;
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::const_reference deque<T,Allocator>::const_reverse_iterator::operator*() const
+    {
+        return *m_ptr;
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::const_pointer deque<T,Allocator>::const_reverse_iterator::operator->() const
+    {
+        return m_ptr;
+    }
+
+    // template<typename T, class Allocator>
+    // typename deque<T,Allocator>::const_reference deque<T,Allocator>::const_iterator::operator[](size_type pos) const
+    // {   
+    //     return m_l_size > pos ? m_left[m_l_size - pos - 1] : m_right[pos - m_l_size]; 
+    // }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::const_reverse_iterator deque<T,Allocator>::rend() const 
+    {   
+        return const_reverse_iterator(m_l_size == 0 ? m_right : m_left + m_l_size, m_left, m_right);
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T, Allocator>::const_reverse_iterator deque<T, Allocator>::rbegin() const 
+    {
+        return const_reverse_iterator(m_r_size == 0 ? m_left : m_right + m_r_size - 1, m_left, m_right);
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::const_reverse_iterator deque<T,Allocator>::crend() const noexcept
+    {
+        return const_reverse_iterator(m_l_size == 0 ? m_right : m_left + m_l_size, m_left, m_right);
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T, Allocator>::const_reverse_iterator deque<T, Allocator>::crbegin() const noexcept
+    {
+        return const_reverse_iterator(m_r_size == 0 ? m_left : m_right + m_r_size - 1, m_left, m_right);
+    }
+
+    template<typename T, class Allocator>
+    bool deque<T, Allocator>::const_reverse_iterator::operator==(const const_reverse_iterator& other) const 
+    {
+        return m_ptr == other.m_ptr;
+    }
+
+    template<typename T, class Allocator>
+    bool deque<T, Allocator>::const_reverse_iterator::operator!=(const const_reverse_iterator& other) const 
+    {
+        return m_ptr != other.m_ptr;
+    }
+
+    template<typename T, class Allocator>
+    bool deque<T, Allocator>::const_reverse_iterator::operator<(const const_reverse_iterator& other) const
+    {
+        return m_ptr < other.m_ptr;
+    }
+
+    template<typename T, class Allocator>
+    bool deque<T, Allocator>::const_reverse_iterator::operator>(const const_reverse_iterator& other) const 
+    { 
+        if(m_ptr >= m_left)
+        {
+            return m_ptr > other.m_ptr;
+        }
+        else
+        {
+            return m_ptr < other.m_ptr;
+        } 
+    }
+
+    template<typename T, class Allocator>
+    bool deque<T, Allocator>::const_reverse_iterator::operator>=(const const_reverse_iterator& other) const 
+    {
+        return *this > other || *this == other;
+    }
+
+    template<typename T, class Allocator>
+    bool deque<T, Allocator>::const_reverse_iterator::operator<=(const const_reverse_iterator& other) const 
+    {
+        return *this < other || *this == other;
+    }
+
+    // ======================================================== reverse_iterator ================================================
+
+    template<typename T, class Allocator>
+    deque<T,Allocator>::reverse_iterator::reverse_iterator(pointer ptr, pointer left, pointer right) : const_reverse_iterator(ptr,left,right){}
+
+    template<typename T, class Allocator>
+    typename deque<T, Allocator>::reverse_iterator deque<T, Allocator>::reverse_iterator::operator-(size_type n) const
+    {
+        if(this->m_ptr - n >= this->m_left)
+        {
+            return reverse_iterator(this->m_ptr - n, this->m_left, this->m_right);
+        }
+        else if(this->m_ptr >= this->m_right && this->m_ptr < this->m_left)
+        {
+            return reverse_iterator(this->m_ptr + n, this->m_left, this->m_right);
+        }
+        else
+        {
+            size_type offset = n - (this->m_ptr - this->m_left) - 1;
+            return reverse_iterator(this->m_right + offset, this->m_left, this->m_right);
+        }
+    }
+
+    
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::reverse_iterator deque<T,Allocator>::reverse_iterator::operator+(size_type n) const
+    {
+        if (this->m_ptr - n >= this->m_right && this->m_ptr < this->m_left)
+        {
+            return reverse_iterator(this->m_ptr - n, this->m_left, this->m_right);
+        }
+        else if (this->m_ptr >= this->m_left)
+        {
+            return reverse_iterator(this->m_ptr + n, this->m_left, this->m_right);
+        }
+        else
+        {
+            size_type offset = n - (this->m_ptr - this->m_right) - 1;
+            return reverse_iterator(this->m_left + offset, this->m_left, this->m_right);
+        }
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::reverse_iterator& deque<T,Allocator>::reverse_iterator::operator--()
+    {      
+        if(this->m_ptr >= this->m_left)
+        {
+            if(this->m_ptr == this->m_left)
+            {
+                this->m_ptr = this->m_right;
+                return *this;
+            }
+            --this->m_ptr;
+        }
+        else
+        {
+            ++this->m_ptr;
+        }
+        return *this;
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::reverse_iterator deque<T,Allocator>::reverse_iterator::operator--(int)
+    {
+        reverse_iterator tmp = *this;
+        ++(*this);
+        return tmp;
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::reverse_iterator& deque<T,Allocator>::reverse_iterator::operator++()
+    {
+        if(this->m_ptr >= this->m_right && !(this->m_ptr >= this->m_left))
+        {
+            if(this->m_ptr == this->m_right)
+            {
+                this->m_ptr = this->m_left;
+                return *this;
+            }
+            --this->m_ptr;
+        }
+        else
+        {
+            ++this->m_ptr;
+        }
+        return *this;
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::reverse_iterator deque<T,Allocator>::reverse_iterator::operator++(int)
+    {
+        reverse_iterator tmp = *this;
+        --(*this);
+        return tmp;
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::reference deque<T,Allocator>::reverse_iterator::operator*() 
+    {
+        return *this->m_ptr;
+    }
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::pointer deque<T,Allocator>::reverse_iterator::operator->() 
+    {
+        return this->m_ptr;
+    }
+
+    // template<typename T, class Allocator>
+    // typename deque<T,Allocator>::const_reference deque<T,Allocator>::const_iterator::operator[](size_type pos) const
+    // {   
+    //     return m_l_size > pos ? m_left[m_l_size - pos - 1] : m_right[pos - m_l_size]; 
+    // }
+
+
+    template<typename T, class Allocator>
+    typename deque<T,Allocator>::reverse_iterator deque<T,Allocator>::rend()  
+    {   
+        return reverse_iterator(m_l_size == 0 ? m_right : m_left + m_l_size, m_left, m_right);
+    }
+
+
+    template<typename T, class Allocator>
+    typename deque<T, Allocator>::reverse_iterator deque<T, Allocator>::rbegin()  
+    {
+        return reverse_iterator(m_r_size == 0 ? m_left : m_right + m_r_size - 1, m_left, m_right);
+    }
 
     template<typename T, class Allocator>
     bool deque<T,Allocator>::balance_factor() const
