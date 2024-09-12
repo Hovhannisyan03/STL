@@ -6,6 +6,8 @@
 #include <memory>
 #include <new>
 #include <utility>
+#include <compare>
+
 namespace my_deque
 {
 
@@ -73,6 +75,7 @@ namespace my_deque
             using pointer = T*;
             using const_pointer = const T*;
             using bf_type = double;
+
         public:
             class iterator;
             class const_iterator;
@@ -146,10 +149,6 @@ namespace my_deque
             iterator insert(const_iterator pos, const_iterator first, const_iterator last);
             iterator insert(const_iterator pos, std::initializer_list<T> init);
 
-
-            // template< class... Args >
-            // iterator emplace(const_iterator pos, Args&&... args);
-
             iterator erase(const_iterator pos);
             iterator erase(const_iterator first, const_iterator last);
 
@@ -159,19 +158,8 @@ namespace my_deque
             void push_front(value_type&& value);
             void pop_back();
             void pop_front();
-
-            template<class... Args>
-            void emplace_back(Args&&... args);
-            // template<class... Args>
-            // reference emplace_back(Args&&... args);
-            // template<class... Args>
-            // void emplace_front(Args&&... args);
-            // template<class... Args>
-            // reference emplace_front(Args&&... args);
-
             void resize(size_type count);
             void resize(size_type count, const value_type& value);
-
             void swap(deque& other) noexcept;
 
         private:
@@ -188,9 +176,27 @@ namespace my_deque
             Allocator m_alloc;
     };
 }
-//template<class T, class Alloc>
-//synth-three-way-result<T> operator<=>(const std::deque<T, Alloc>& lhs, const std::deque<T, Alloc>& rhs);
 
+template<class T, class Alloc>
+std::strong_ordering operator<=>(const my_deque::deque<T, Alloc>& lhs, const my_deque::deque<T, Alloc>& rhs) 
+{
+    if (auto cmp = lhs.size() <=> rhs.size(); cmp != 0) 
+    {
+        return cmp;
+    }
+
+    auto lhs_it = lhs.begin();
+    auto rhs_it = rhs.begin();
+    for (; lhs_it != lhs.end(); ++lhs_it, ++rhs_it) 
+    {
+        if (auto cmp = *lhs_it <=> *rhs_it; cmp != 0) 
+        {
+            return cmp;
+        }
+    }
+
+    return std::strong_ordering::equal;
+}
 
 template <typename T, class Allocator>
 class my_deque::deque<T,Allocator>::const_iterator
