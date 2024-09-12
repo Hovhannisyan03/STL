@@ -667,25 +667,6 @@ namespace my_deque
         m_r_size = right_size;
     }
 
-    template <typename T, class Allocator>
-    template<class ...Args>
-    void deque<T,Allocator>::emplace_back(Args&&... args)
-    {
-        if(m_r_size == m_r_capacity) 
-        {   
-            reserve(m_r_capacity == 0 ? 1 : m_r_capacity * 2, false);
-        }
-
-        m_alloc.construct(m_right + m_r_size, std::forward<Args>(args)...);
-        ++m_r_size;
-
-        if(balance_factor())
-        {
-            rebalance();
-        }
-    }
-
-
     template<typename T, class Allocator>
     void deque<T,Allocator>::swap(deque& other) noexcept
     {
@@ -803,13 +784,6 @@ namespace my_deque
     {
         return m_ptr;
     }
-
-    // template<typename T, class Allocator>
-    // typename deque<T,Allocator>::const_reference deque<T,Allocator>::const_iterator::operator[](size_type pos) const
-    // {   
-    //     return m_l_size > pos ? m_left[m_l_size - pos - 1] : m_right[pos - m_l_size]; 
-    // }
-
 
     template<typename T, class Allocator>
     typename deque<T,Allocator>::const_iterator deque<T,Allocator>::begin() const 
@@ -987,13 +961,6 @@ namespace my_deque
         return this->m_ptr;
     }
 
-    // template<typename T, class Allocator>
-    // typename deque<T,Allocator>::const_reference deque<T,Allocator>::const_iterator::operator[](size_type pos) const
-    // {   
-    //     return m_l_size > pos ? m_left[m_l_size - pos - 1] : m_right[pos - m_l_size]; 
-    // }
-
-
     template<typename T, class Allocator>
     typename deque<T,Allocator>::iterator deque<T,Allocator>::begin()  
     {   
@@ -1112,12 +1079,6 @@ namespace my_deque
     {
         return m_ptr;
     }
-
-    // template<typename T, class Allocator>
-    // typename deque<T,Allocator>::const_reference deque<T,Allocator>::const_iterator::operator[](size_type pos) const
-    // {   
-    //     return m_l_size > pos ? m_left[m_l_size - pos - 1] : m_right[pos - m_l_size]; 
-    // }
 
     template<typename T, class Allocator>
     typename deque<T,Allocator>::const_reverse_iterator deque<T,Allocator>::rend() const 
@@ -1293,13 +1254,6 @@ namespace my_deque
     {
         return this->m_ptr;
     }
-
-    // template<typename T, class Allocator>
-    // typename deque<T,Allocator>::const_reference deque<T,Allocator>::const_iterator::operator[](size_type pos) const
-    // {   
-    //     return m_l_size > pos ? m_left[m_l_size - pos - 1] : m_right[pos - m_l_size]; 
-    // }
-
 
     template<typename T, class Allocator>
     typename deque<T,Allocator>::reverse_iterator deque<T,Allocator>::rend()  
